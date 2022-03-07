@@ -59,41 +59,41 @@ class DydxPerpetualClientWrapper:
                                                      expiration_epoch_seconds=expiration,
                                                      time_in_force=time_in_force,
                                                      trailing_percent=trailing_percent))
-        return await f
+        return await f.data
 
     async def cancel_order(self, exchange_order_id):
         f = self._loop.run_in_executor(None, partial(self.client.private.cancel_order,
                                                      order_id=exchange_order_id))
-        return await f
+        return await f.data
 
     async def get_my_balances(self):
         f = self._loop.run_in_executor(None, partial(self.client.private.get_account,
                                                      ethereum_address=self._ethereum_address))
-        return await f
+        return await f.data
 
     async def get_my_positions(self):
         f = self._loop.run_in_executor(None, self.client.private.get_positions)
-        return await f
+        return await f.data
 
     async def get_order(self, exchange_order_id):
         f = self._loop.run_in_executor(None, partial(self.client.private.get_order_by_id,
                                                      order_id=exchange_order_id))
-        return await f
+        return await f.data
 
     async def get_markets(self):
         f = self._loop.run_in_executor(None, self.client.public.get_markets)
-        return await f
+        return await f.data
 
     async def get_fills(self, exchange_order_id):
         f = self._loop.run_in_executor(None, partial(self.client.private.get_fills,
                                                      order_id=exchange_order_id,
                                                      limit=100))
-        return await f
+        return await f.data
 
     async def get_account(self):
         f = self._loop.run_in_executor(None, partial(self.client.private.get_account,
                                                      ethereum_address=self._ethereum_address))
-        return await f
+        return await f.data
 
     async def get_funding_payments(self, market: str, before_ts: float):
         iso_ts = datetime.datetime.utcfromtimestamp(before_ts).isoformat()
@@ -102,11 +102,11 @@ class DydxPerpetualClientWrapper:
                                                      limit=100,
                                                      effective_before_or_at=iso_ts
                                                      ))
-        return await f
+        return await f.data
 
     async def get_server_time(self):
         f = self._loop.run_in_executor(None, self.client.public.get_time)
-        return await f
+        return await f.data
 
     def sign(self, request_path, method, timestamp, data):
         sign = self.client.private.sign(request_path=request_path,
