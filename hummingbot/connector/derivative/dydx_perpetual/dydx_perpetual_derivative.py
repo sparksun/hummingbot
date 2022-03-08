@@ -395,10 +395,10 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
                 return
 
             # Verify the response from the exchange
-            if "order" not in creation_response.keys():
+            if "order" not in creation_response.data.keys():
                 raise Exception(creation_response["errors"][0]["msg"])
 
-            order = creation_response["order"]
+            order = creation_response.data["order"]
             status = order["status"]
             if status not in ["PENDING", "OPEN"]:
                 raise Exception(status)
