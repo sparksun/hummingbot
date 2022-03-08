@@ -309,7 +309,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
             clientId=client_order_id,
             limit_fee=str(limit_fee),
             expiration=expiration,
-        ).data
+        )
 
     async def execute_order(
         self, order_side, client_order_id, trading_pair, amount, order_type, position_action, price
