@@ -39,6 +39,8 @@ from hummingbot.model.trade_fill import TradeFill
 import logging
 from hummingbot.logger import HummingbotLogger
 
+recorder_logger = None
+
 
 class MarketsRecorder:
     market_event_tag_map: Dict[int, MarketEvent] = {
