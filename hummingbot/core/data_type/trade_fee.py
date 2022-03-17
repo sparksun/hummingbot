@@ -34,7 +34,7 @@ class TradeFeeBase(ABC):
         return {
             "percent": float(self.percent),
             "percent_token": self.percent_token,
-            "flat_fees": [{"asset": asset, "amount": float(amount)}
+            "flat_fees": [{"asset": asset, "amount": (0.0 if amount is None else float(amount))}
                           for asset, amount in self.flat_fees]
         }
 
