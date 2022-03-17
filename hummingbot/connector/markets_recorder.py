@@ -36,6 +36,8 @@ from hummingbot.model.range_position import RangePosition
 from hummingbot.model.range_position_update import RangePositionUpdate
 from hummingbot.model.sql_connection_manager import SQLConnectionManager
 from hummingbot.model.trade_fill import TradeFill
+import logging
+from hummingbot.logger import HummingbotLogger
 
 
 class MarketsRecorder:
@@ -43,6 +45,13 @@ class MarketsRecorder:
         event_obj.value: event_obj
         for event_obj in MarketEvent.__members__.values()
     }
+
+    @classmethod
+    def logger(cls) -> HummingbotLogger:
+        global recorder_logger
+        if recorder_logger is None:
+            recorder_logger = logging.getLogger(__name__)
+        return recorder_logger
 
     def __init__(self,
                  sql: SQLConnectionManager,
@@ -225,7 +234,7 @@ class MarketsRecorder:
         if threading.current_thread() != threading.main_thread():
             self._ev_loop.call_soon_threadsafe(self._did_fill_order, event_tag, market, evt)
             return
-
+        self.logger().info(str(evt))
         base_asset, quote_asset = evt.trading_pair.split("-")
         timestamp: int = int(evt.timestamp * 1e3) if evt.timestamp is not None else self.db_timestamp
         event_type: MarketEvent = self.market_event_tag_map[event_tag]
