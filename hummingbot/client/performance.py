@@ -12,9 +12,12 @@ from hummingbot.connector.utils import split_hb_trading_pair
 from hummingbot.core.utils.market_price import get_last_price
 from hummingbot.core.event.events import TradeType, PositionAction
 from hummingbot.model.trade_fill import TradeFill
+import logging
+from hummingbot.logger import HummingbotLogger
 
 s_decimal_0 = Decimal("0")
 s_decimal_nan = Decimal("NaN")
+performance_logger = None
 
 
 @dataclass
@@ -55,6 +58,13 @@ class PerformanceMetrics:
     def __init__(self):
         # fees is a dictionary of token and total fee amount paid in that token.
         self.fees: Dict[str, Decimal] = {}
+
+    @classmethod
+    def logger(cls) -> HummingbotLogger:
+        global performance_logger
+        if performance_logger is None:
+            performance_logger = logging.getLogger(__name__)
+        return performance_logger
 
     @classmethod
     async def create(cls, exchange: str,
@@ -224,7 +234,8 @@ class PerformanceMetrics:
                     self.fees[flat_fee.token] += flat_fee.amount
 
         for fee_token, fee_amount in self.fees.items():
-            if fee_token == quote:
+            self.logger().info(f"fee_token: {fee_token}, fee_amount: {fee_amount}.")
+            if fee_token is None or fee_token == 'None' or fee_token == quote:
                 self.fee_in_quote += fee_amount
             else:
                 last_price = await get_last_price(exchange, f"{fee_token}-{quote}")
