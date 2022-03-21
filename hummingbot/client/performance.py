@@ -234,7 +234,6 @@ class PerformanceMetrics:
                     self.fees[flat_fee.token] += flat_fee.amount
 
         for fee_token, fee_amount in self.fees.items():
-            self.logger().info(f"fee_token: {fee_token}, fee_amount: {fee_amount}.")
             if fee_token is None or fee_token == 'None' or fee_token == quote:
                 self.fee_in_quote += fee_amount
             else:
