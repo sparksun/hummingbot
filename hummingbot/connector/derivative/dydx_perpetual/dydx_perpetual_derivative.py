@@ -311,7 +311,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
             clientId=client_order_id,
             limit_fee=str(limit_fee),
             expiration=expiration,
-        ).data
+        )
 
     async def execute_order(
         self, order_side, client_order_id, trading_pair, amount, order_type, position_action, price
@@ -397,10 +397,10 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
                 return
 
             # Verify the response from the exchange
-            if "order" not in creation_response.data.keys():
+            if "order" not in creation_response.keys():
                 raise Exception(creation_response["errors"][0]["msg"])
 
-            order = creation_response.data["order"]
+            order = creation_response["order"]
             status = order["status"]
             if status not in ["PENDING", "OPEN"]:
                 raise Exception(status)
@@ -501,13 +501,13 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
     async def cancel_order(self, client_order_id: str):
         in_flight_order = self._in_flight_orders.get(client_order_id)
         cancellation_event = OrderCancelledEvent(now(), client_order_id)
+        exchange_order_id = in_flight_order.exchange_order_id
 
         if in_flight_order is None:
             self.logger().warning("Cancelled an untracked order {client_order_id}")
             self.trigger_event(ORDER_CANCELLED_EVENT, cancellation_event)
             return False
 
-        exchange_order_id = in_flight_order.exchange_order_id
         try:
             if exchange_order_id is None:
                 # Note, we have no way of canceling an order or querying for information about the order
@@ -539,7 +539,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
                 return False
             elif "is already filled" in str(e):
                 response = await self.dydx_client.get_order(exchange_order_id)
-                order_status = response.data["order"]
+                order_status = response["order"]
                 in_flight_order.update(order_status)
                 self._issue_order_events(in_flight_order)
                 self.stop_tracking_order(in_flight_order.client_order_id)
@@ -810,7 +810,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
     async def _update_funding_rates(self):
         try:
             response = await self.dydx_client.get_markets()
-            markets_info = response.data["markets"]
+            markets_info = response["markets"]
             for trading_pair in self._trading_pairs:
                 self._funding_info[trading_pair] = FundingInfo(
                     trading_pair,
@@ -1004,7 +1004,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
 
     async def _update_account_positions(self):
         account_info = await self.dydx_client.get_account()
-        current_positions = account_info.data["account"]
+        current_positions = account_info["account"]
 
         for market, position in current_positions["openPositions"].items():
             market = position["market"]
@@ -1048,10 +1048,10 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
 
     async def _update_balances(self):
         current_balances = await self.dydx_client.get_my_balances()
-        await self._set_balances(current_balances.data["account"], True)
+        await self._set_balances(current_balances["account"], True)
 
     async def _update_trading_rules(self):
-        markets_info = (await self.dydx_client.get_markets()).data["markets"]
+        markets_info = (await self.dydx_client.get_markets())["markets"]
         for market_name in markets_info:
             market = markets_info[market_name]
             try:
@@ -1093,7 +1093,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
             dydx_order_request = None
             try:
                 dydx_order_request = await self.dydx_client.get_order(dydx_order_id)
-                data = dydx_order_request.data["order"]
+                data = dydx_order_request["order"]
             except Exception:
                 self.logger().warning(
                     f"Failed to fetch tracked dydx order "
@@ -1124,7 +1124,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
 
     async def _update_fills(self, tracked_order: DydxPerpetualInFlightOrder):
         try:
-            data = await self.dydx_client.get_fills(tracked_order.exchange_order_id).data
+            data = await self.dydx_client.get_fills(tracked_order.exchange_order_id)
             for fill in data["fills"]:
                 if fill["orderId"] == tracked_order.exchange_order_id:
                     id = fill["id"]
@@ -1159,7 +1159,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
             try:
 
                 response = await self.dydx_client.get_funding_payments(market=trading_pair, before_ts=self.time_now_s())
-                funding_payments = response.data["fundingPayments"]
+                funding_payments = response["fundingPayments"]
                 for funding_payment in funding_payments:
                     ts = dateparse(funding_payment["effectiveAt"]).timestamp()
                     if ts <= self._trading_pair_last_funding_payment_ts[trading_pair]:
@@ -1189,7 +1189,7 @@ class DydxPerpetualDerivative(ExchangeBase, PerpetualTrading):
 
     async def _set_leverage(self, trading_pair: str, leverage: int = 1):
         markets = await self.dydx_client.get_markets()
-        markets_info = markets.data["markets"]
+        markets_info = markets["markets"]
 
         self._margin_fractions[trading_pair] = {
             "initial": Decimal(markets_info[trading_pair]["initialMarginFraction"]),
