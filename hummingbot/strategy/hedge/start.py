@@ -17,7 +17,8 @@ def start(self):
     max_order_age = c_map.get("max_order_age").value
     minimum_trade = c_map.get("minimum_trade").value
     hedge_interval = c_map.get("hedge_interval").value
-    self._initialize_markets([(maker_exchange, []), (taker_exchange, taker_markets)])
+    maker_markets = [e + "-USDT" for e in maker_assets]
+    self._initialize_markets([(maker_exchange, maker_markets), (taker_exchange, taker_markets)])
     exchanges = ExchangePairTuple(maker=self.markets[maker_exchange], taker=self.markets[taker_exchange])
 
     market_infos = {}
