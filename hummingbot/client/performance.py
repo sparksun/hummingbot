@@ -237,7 +237,7 @@ class PerformanceMetrics:
                 self.fees[flat_fee.token] += flat_fee.amount
 
         for fee_token, fee_amount in self.fees.items():
-            if fee_token == quote:
+            if fee_token is None or fee_token == 'None' or fee_token == quote:
                 self.fee_in_quote += fee_amount
             else:
                 rate_pair: str = combine_to_hb_trading_pair(fee_token, quote)
