@@ -39,7 +39,7 @@ class DydxPerpetualClientWrapper:
         return self._account_number
 
     async def place_order(self, market, side, amount, price, order_type, postOnly, clientId, limit_fee, expiration):
-        account = await self.get_account()
+        account = (await self.get_account()).data
         dydx_client_id = 10 * int("".join([n for n in clientId if n.isdigit()]))
         if side == 'SELL':
             dydx_client_id += 1
